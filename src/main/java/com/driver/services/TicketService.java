@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TicketService {
@@ -41,8 +42,52 @@ public class TicketService {
         //Save the bookedTickets in the train Object
         //Also in the passenger Entity change the attribute bookedTickets by using the attribute bookingPersonId.
        //And the end return the ticketId that has come from db
+        Optional<Train> optionalTrain=trainRepository.findById(bookTicketEntryDto.getTrainId());
+        if(!optionalTrain.isPresent()) throw  new Exception("Invalid Train Id!!");
+        String[] route=optionalTrain.get().getRoute().split(",");
+        int start=-1,end=-1;
+        boolean startStation=false,endStation=false;
+        for(int i=0;i<route.length;i++){
+            if(route[i].equals(bookTicketEntryDto.getFromStation().toString())){
+                start=i;
+                startStation=true;
+            }
+            if(route[i].equals(bookTicketEntryDto.getToStation().toString())){
+                end=i;
+                endStation=true;
+            }
+        }
+        if(start==-1||end==-1 || !startStation || !endStation || start>end){
+            throw new Exception("Invalid stations");
+        }
+        if(optionalTrain.get().getNoOfSeats()<bookTicketEntryDto.getNoOfSeats()){
+            throw new Exception("Less tickets are available");
+        }
+        int noOfStations=Math.abs(end-start);
+        int totalFare=noOfStations*300*bookTicketEntryDto.getNoOfSeats();
 
-       return null;
+        Train train=optionalTrain.get();
+//        train.setNoOfSeats(train.getNoOfSeats()-bookTicketEntryDto.getNoOfSeats());
+
+
+        Ticket ticket=new Ticket();
+        ticket.setFromStation(bookTicketEntryDto.getFromStation());
+        ticket.setToStation(bookTicketEntryDto.getToStation());
+        ticket.setTotalFare(totalFare);
+        ticket.setTrain(optionalTrain.get());
+        for(int id:bookTicketEntryDto.getPassengerIds()){
+            Optional<Passenger> optionalPassenger=passengerRepository.findById(id);
+            ticket.getPassengersList().add(optionalPassenger.get());
+        }
+       Ticket savedTicket=ticketRepository.save(ticket);
+        train.getBookedTickets().add(savedTicket);
+        Optional<Passenger> optionalPassenger=passengerRepository.findById(bookTicketEntryDto.getBookingPersonId());
+        Passenger passenger=optionalPassenger.get();
+        passenger.getBookedTickets().add(savedTicket);
+        trainRepository.save(train);
+        passengerRepository.save(passenger);
+
+       return savedTicket.getTicketId();
 
     }
 }
