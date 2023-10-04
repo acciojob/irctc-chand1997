@@ -63,13 +63,9 @@ public class TicketService {
         if(start==-1||end==-1 || !startStation || !endStation || start>end){
             throw new Exception("Invalid stations");
         }
-        SeatAvailabilityEntryDto seatAvailabilityEntryDto=new SeatAvailabilityEntryDto();
-        seatAvailabilityEntryDto.setFromStation(bookTicketEntryDto.getFromStation());
-        seatAvailabilityEntryDto.setToStation(bookTicketEntryDto.getToStation());
-        seatAvailabilityEntryDto.setTrainId(bookTicketEntryDto.getTrainId());
-        int availableSeats= trainService.calculateAvailableSeats(seatAvailabilityEntryDto);
 
-        if(availableSeats<bookTicketEntryDto.getNoOfSeats()){
+
+        if(optionalTrain.get().getNoOfSeats()<bookTicketEntryDto.getNoOfSeats()){
             throw new Exception("Less tickets are available");
         }
         int noOfStations=Math.abs(end-start);
