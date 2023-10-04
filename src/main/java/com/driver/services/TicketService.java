@@ -2,6 +2,7 @@ package com.driver.services;
 
 
 import com.driver.EntryDto.BookTicketEntryDto;
+import com.driver.EntryDto.SeatAvailabilityEntryDto;
 import com.driver.model.Passenger;
 import com.driver.model.Ticket;
 import com.driver.model.Train;
@@ -26,6 +27,8 @@ public class TicketService {
 
     @Autowired
     PassengerRepository passengerRepository;
+
+    @Autowired TrainService trainService;
 
 
     public Integer bookTicket(BookTicketEntryDto bookTicketEntryDto)throws Exception{
@@ -60,7 +63,13 @@ public class TicketService {
         if(start==-1||end==-1 || !startStation || !endStation || start>end){
             throw new Exception("Invalid stations");
         }
-        if(optionalTrain.get().getNoOfSeats()<bookTicketEntryDto.getNoOfSeats()){
+        SeatAvailabilityEntryDto seatAvailabilityEntryDto=new SeatAvailabilityEntryDto();
+        seatAvailabilityEntryDto.setFromStation(bookTicketEntryDto.getFromStation());
+        seatAvailabilityEntryDto.setToStation(bookTicketEntryDto.getToStation());
+        seatAvailabilityEntryDto.setTrainId(bookTicketEntryDto.getTrainId());
+        int availableSeats= trainService.calculateAvailableSeats(seatAvailabilityEntryDto);
+
+        if(availableSeats<bookTicketEntryDto.getNoOfSeats()){
             throw new Exception("Less tickets are available");
         }
         int noOfStations=Math.abs(end-start);
