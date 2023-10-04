@@ -125,7 +125,10 @@ public class TrainService {
         }
         List<Integer> trainIds=new ArrayList<>();
         for(Integer id:trainIdAndPassingTime.keySet()){
-            if(trainIdAndPassingTime.get(id).isAfter(startTime) && trainIdAndPassingTime.get(id).isBefore(endTime)){
+            int comparisonResultStart= startTime.compareTo(trainIdAndPassingTime.get(id));
+            int comparisonResultEnd=trainIdAndPassingTime.get(id).compareTo(endTime);
+
+            if(comparisonResultStart<=0 && comparisonResultEnd<=0){
                 trainIds.add(id);
             }
         }
