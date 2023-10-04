@@ -74,13 +74,14 @@ public class TicketService {
         ticket.setFromStation(bookTicketEntryDto.getFromStation());
         ticket.setToStation(bookTicketEntryDto.getToStation());
         ticket.setTotalFare(totalFare);
-        ticket.setTrain(optionalTrain.get());
-        for(int id:bookTicketEntryDto.getPassengerIds()){
-            Optional<Passenger> optionalPassenger=passengerRepository.findById(id);
-            ticket.getPassengersList().add(optionalPassenger.get());
-        }
-       Ticket savedTicket=ticketRepository.save(ticket);
+        ticket.setTrain(train);
+        Ticket savedTicket=ticketRepository.save(ticket);
         train.getBookedTickets().add(savedTicket);
+
+        for(int id:bookTicketEntryDto.getPassengerIds()){
+            savedTicket.getPassengersList().add(passengerRepository.findById(id).get());
+        }
+
         Optional<Passenger> optionalPassenger=passengerRepository.findById(bookTicketEntryDto.getBookingPersonId());
         Passenger passenger=optionalPassenger.get();
         passenger.getBookedTickets().add(savedTicket);
